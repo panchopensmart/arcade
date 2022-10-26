@@ -18,9 +18,9 @@ let game = {
     setEvents() {
         window.addEventListener("keydown", (e) => {
 
-            if (e.code === "ArrowRight") {
+            if (e.code === "ArrowLeft") {
                 this.platform.dx -= this.platform.velocity
-            } else if ( e.code === "ArrowLeft") {
+            } else if ( e.code === "ArrowRight") {
                 this.platform.dx += this.platform.velocity
             }
         })
