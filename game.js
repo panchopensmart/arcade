@@ -13,6 +13,21 @@ let game = {
     },
     init() {
         this.ctx = document.getElementById("mycanvas").getContext("2d");
+        this.setEvents();
+    },
+    setEvents() {
+        window.addEventListener("keydown", (e) => {
+
+            if (e.code === "ArrowRight") {
+                this.platform.dx -= this.platform.velocity
+            } else if ( e.code === "ArrowLeft") {
+                this.platform.dx += this.platform.velocity
+            }
+        })
+
+        window.addEventListener("keyup", () => {
+            this.platform.dx = 0 // обнуление скорости чтобы платформа останавливалась
+        })
     },
     preload (callback) {
         let loaded = 0
@@ -41,9 +56,15 @@ let game = {
 
         }
     },
+
+    update() {
+        this.platform.move()
+    },
     run(){
         window.requestAnimationFrame(() => {
+            this.update()
             this.render() //отрисовка запланированной анимации
+            this.run() //рекурсивное объявление рендера чтобы программа бесконечно отрисовывала новый стейт
         });
     },
 
@@ -79,6 +100,13 @@ game.ball = {
 }
 
 game.platform = {
+    move() {
+        if(this.dx) { //если координата не равна нулю то платформа движется
+            this.x += this.dx
+        }
+    },
+    velocity: 6,//скорость платформы
+    dx: 0, //скорость по дефолту
     x: 280,
     y: 300
 }
