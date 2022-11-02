@@ -17,11 +17,8 @@ let game = {
     },
     setEvents() {
         window.addEventListener("keydown", (e) => {
-
-            if (e.code === "ArrowLeft") {
-                this.platform.dx -= this.platform.velocity
-            } else if ( e.code === "ArrowRight") {
-                this.platform.dx += this.platform.velocity
+            if (e.code === "ArrowLeft" ||  e.code === "ArrowRight") {
+                this.platform.start(e.code)
             }
         })
 
@@ -103,6 +100,14 @@ game.platform = {
     move() {
         if(this.dx) { //если координата не равна нулю то платформа движется
             this.x += this.dx
+            game.ball.x +=this.dx
+        }
+    },
+    start(keyVal) {
+        if (keyVal === "ArrowLeft") {
+            this.dx = -this.velocity
+        } else if ( keyVal === "ArrowRight") {
+            this.dx = this.velocity
         }
     },
     velocity: 6,//скорость платформы
