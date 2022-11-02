@@ -23,7 +23,7 @@ let game = {
         })
 
         window.addEventListener("keyup", () => {
-            this.platform.dx = 0 // обнуление скорости чтобы платформа останавливалась
+            this.platform.stop()// обнуление скорости чтобы платформа останавливалась
         })
     },
     preload (callback) {
@@ -109,6 +109,9 @@ game.platform = {
         } else if ( keyVal === "ArrowRight") {
             this.dx = this.velocity
         }
+    },
+    stop() {
+        this.dx = 0
     },
     velocity: 6,//скорость платформы
     dx: 0, //скорость по дефолту
