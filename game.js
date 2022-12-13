@@ -5,6 +5,8 @@ const KEYS = { //ключи для отслеживания клавиш
 }
 
 let game = {
+    score: 0,
+    running: true,
     ctx: null,
     platform: null,
     ball: null,
@@ -31,7 +33,7 @@ let game = {
                 this.platform.start(e.keyCode);
             }
         });
-        window.addEventListener("keyup", e => {
+        window.addEventListener("keyup", () => {
             this.platform.stop();
         });
     },
@@ -65,6 +67,7 @@ let game = {
     },
 
     update() {
+        this.platform.collideWorldBounce()
         this.platform.move()
         this.ball.move()
         this.ball.collideWorldBounce()
@@ -72,26 +75,34 @@ let game = {
         this.collidePlatform()
 
     },
+    addScore() {
+        ++this.score
+        if (this.score >= this.blocks.length) {
+            this.end('U win')
+        }
+    },
     collideBlocks() {
         for (let block of this.blocks) {
             if (block.active && this.ball.collide(block)) { //проверка блоко до которого не дотронулся мяч и столкновения мяча с блоком
                 this.ball.bumpBlock(block) //функция отскока
+                this.addScore()
             }
-
         }
     },
-    collidePlatform(element) {
+    collidePlatform() {
         if (this.ball.collide(this.platform)) {
             this.ball.bumpPlatform(this.platform) //создаёт отдачу от левого края - вправо, от правого - влево
         }
     },
 
     run(){
-        window.requestAnimationFrame(() => {
-            this.update()
-            this.render() //отрисовка запланированной анимации
-            this.run() //рекурсивное объявление рендера чтобы программа бесконечно отрисовывала новый стейт
-        });
+        if (this.running) {
+            window.requestAnimationFrame(() => {
+                this.update()
+                this.render() //отрисовка запланированной анимации
+                this.run() //рекурсивное объявление рендера чтобы программа бесконечно отрисовывала новый стейт
+            });
+        }
     },
 
     render() {
@@ -118,7 +129,13 @@ let game = {
             this.create()
             this.run()
         })
+    },
+    end(message) {
+        this.running = false
+        alert(message)
+        window.location.reload()
     }
+
 };
 
 //свойства спрайтов
@@ -156,6 +173,7 @@ game.ball = {
         block.active = false
     },
     bumpPlatform(platform){
+        this.x += platform.dx
         if (this.dy > 0) {
             this.dy = -this.velocity //мяч отталкивается только наверх и никогда назад
             let touchX = this.x + this.width / 2 //делится на 2 чтобы было понятно в какую часть ударил мяч
@@ -168,8 +186,8 @@ game.ball = {
 
         let ballLeft = x
         let ballRight = ballLeft + this.width
-        let balltop = y
-        let ballBottom = balltop + this.height
+        let ballTop = y
+        let ballBottom = ballTop + this.height
 
         let worldLeft = 0
         let worldRight = game.width
@@ -182,13 +200,12 @@ game.ball = {
         } else if (ballRight > worldRight) {
             this.x = worldRight - this.width
             this.dx = -this.velocity
-        } else if (balltop < worldTop) {
+        } else if (ballTop < worldTop) {
             this.dy = this.velocity
             this.y = 0
         } else if (ballBottom > worldBottom) {
-            console.log('game over')
+            game.end("U lose")
         }
-
     }
 };
 
@@ -233,6 +250,16 @@ game.platform = {
 
         let result = offset * 2 / this.width //центр попадания мяча
        return  result -= 1 // вернуть результат в пределах [-1;1]
+    },
+    collideWorldBounce() {
+        let platformLeft = this.x + this.dx;
+        let platformRight = platformLeft + this.width;
+        let worldLeft = 0;
+        let worldRight = game.width;
+
+        if (platformLeft < worldLeft || platformRight > worldRight) {
+            this.dx = 0
+        }
     }
 };
 
