@@ -74,21 +74,21 @@ let game = {
 
     render() {
         //начальные координаты всех спрайтов
-        this.ctx.drawImage(this.sprites.background, 0, 0);
-        this.ctx.drawImage(this.sprites.ball, 0, 0, this.ball.width, this.ball.height, this.ball.x,this.ball.y, this.ball.width, this.ball.height);
-        this.ctx.drawImage(this.sprites.platform, this.platform.x, this.platform.y);
+        this.ctx.drawImage(this.sprites.background, 0, 0)
+        this.ctx.drawImage(this.sprites.ball, 0, 0, this.ball.width, this.ball.height, this.ball.x,this.ball.y, this.ball.width, this.ball.height)
+        this.ctx.drawImage(this.sprites.platform, this.platform.x, this.platform.y)
 
         this.renderBlocks()
     },
     renderBlocks() {
         for(let block of this.blocks) {
-            this.ctx.drawImage(this.sprites.block, block.x, block.y); // рендер блоков
+            this.ctx.drawImage(this.sprites.block, block.x, block.y) // рендер блоков
         }
     },
     start() {
         this.init()
         this.preload(()=> {
-            this.create();
+            this.create()
             this.run()
         })
     }
@@ -96,24 +96,33 @@ let game = {
 
 //свойства спрайтов
 
+game.ball = {
+    dy: 0,
+    velocity: 3,
+    x: 320,
+    y: 280,
+    width: 20,
+    height: 20,
+    start() {
+        this.dy = -this.velocity
+    },
+    move() {
+        if (this.dy) {
+            this.y += this.dy
+        }
+    }
+};
+
 game.platform = {
-    velocity: 6,//скорость платформы
-    dx: 0, //скорость по дефолту
+    velocity: 6,
+    dx: 0,
     x: 280,
     y: 300,
-    ball: this.ball,
+    ball: game.ball,
     fire() {
         if (this.ball) {
             this.ball.start()
             this.ball = null
-        }
-    },
-    move() {
-        if(this.dx) { //если координата не равна нулю то платформа движется
-            this.x += this.dx
-            if (this.ball) {
-                this.ball.x += this.dx
-            }
         }
     },
     start(direction) {
@@ -126,24 +135,16 @@ game.platform = {
     stop() {
         this.dx = 0
     },
-}
-
-game.ball = {
-    dy: 0,
-    velocity: 3,
-    x: 320,
-    y: 280,
-    width: 20,
-    height: 20,
-    start() {
-        this.dy = -this.velocity;
-    },
     move() {
-        if (this.dy) {
-            this.y += this.dy;
+        if (this.dx) {
+            this.x += this.dx
+            if (this.ball) {
+                this.ball.x += this.dx
+            }
         }
     }
 };
+
 
 window.addEventListener('load', () => {
     game.start()
