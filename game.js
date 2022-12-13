@@ -70,6 +70,7 @@ let game = {
 
         for (let block of this.blocks) {
             if(this.ball.collide(block)) {
+                this.ball.bumpBlock(block)
                 console.log('collide!')
             }
         }
@@ -137,8 +138,10 @@ game.ball = {
             x < element.x + element.width &&
             y + this.height > element.y &&
             y < element.y + element.height;
-
     },
+    bumpBlock(block) {
+        this.dy = -this.dy
+    }
 };
 
 game.platform = {
