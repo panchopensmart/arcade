@@ -69,10 +69,13 @@ let game = {
         this.ball.move()
 
         for (let block of this.blocks) {
-            if(this.ball.collide(block)) {
-                this.ball.bumpBlock(block)
-                console.log('collide!')
+            if(this.ball.collide(block)) { //проверка столкновения мяча с блоком
+                this.ball.bumpBlock(block) //функция отскока
             }
+        }
+
+        if (this.ball.collide(this.platform)) {
+            this.ball.bumpPlatform(this.platform) //создаёт отдачу от левого края - вправо, от правого - влево
         }
     },
     run(){
@@ -134,13 +137,18 @@ game.ball = {
         let x = this.x + this.dx;
         let y = this.y + this.dy;
 
-        return x + this.width > element.x &&
+        return x + this.width > element.x && //проверка столкновения с block
             x < element.x + element.width &&
             y + this.height > element.y &&
             y < element.y + element.height;
     },
     bumpBlock(block) {
         this.dy = -this.dy
+    },
+    bumpPlatform(platform){
+        this.dy *= -1
+        let touchX = this.x + this.width / 2 //делится на 2 чтобы было понятно в какую часть ударил мяч
+        this.dx = this.velocity * platform.getTouchOffset(touchX)
     }
 };
 
@@ -149,6 +157,8 @@ game.platform = {
     dx: 0,
     x: 280,
     y: 300,
+    height: 14,
+    width: 100,
     ball: game.ball,
     fire() {
         if (this.ball) {
@@ -173,6 +183,16 @@ game.platform = {
                 this.ball.x += this.dx
             }
         }
+    },
+    getTouchOffset(x) { //метод делит на 2 части платформу от точки касания мяча
+        let diff = (this.x + this.width) - x //правая часть
+        let offset = this.width - diff //левая часть
+
+        // this.width = 2(вся ширина)  result вычисляется по правилам пропорции
+        // offset - ?
+
+        let result = offset * 2 / this.width //центр попадания мяча
+       return  result -= 1 // вернуть результат в пределах [-1;1]
     }
 };
 
