@@ -1,4 +1,4 @@
-const KEYS = {
+const KEYS = { //ключи для отслеживания клавиш
     LEFT: 37,
     RIGHT: 39,
     SPACE: 32
@@ -54,30 +54,38 @@ let game = {
         for (let row = 0; row < this.rows; row++) {
             for (let col = 0; col < this.cols; col++) {
                 this.blocks.push({
+                    active: true,
                     width: 60,
                     height: 20,
                     x: (60 + 4) * col + 65, //отступы по 4 пикселя (+ 65 это смещение всей конструкции вправо)
                     y: (20 + 4) * row + 20 //здесь +20 отступ сверху
                 })
             }
-
         }
     },
 
     update() {
         this.platform.move()
         this.ball.move()
+        this.ball.collideWorldBounce()
+        this.collideBlocks()
+        this.collidePlatform()
 
+    },
+    collideBlocks() {
         for (let block of this.blocks) {
-            if(this.ball.collide(block)) { //проверка столкновения мяча с блоком
+            if (block.active && this.ball.collide(block)) { //проверка блоко до которого не дотронулся мяч и столкновения мяча с блоком
                 this.ball.bumpBlock(block) //функция отскока
             }
-        }
 
+        }
+    },
+    collidePlatform(element) {
         if (this.ball.collide(this.platform)) {
             this.ball.bumpPlatform(this.platform) //создаёт отдачу от левого края - вправо, от правого - влево
         }
     },
+
     run(){
         window.requestAnimationFrame(() => {
             this.update()
@@ -92,12 +100,13 @@ let game = {
         this.ctx.drawImage(this.sprites.background, 0, 0)
         this.ctx.drawImage(this.sprites.ball, 0, 0, this.ball.width, this.ball.height, this.ball.x,this.ball.y, this.ball.width, this.ball.height)
         this.ctx.drawImage(this.sprites.platform, this.platform.x, this.platform.y)
-
         this.renderBlocks()
     },
     renderBlocks() {
         for(let block of this.blocks) {
-            this.ctx.drawImage(this.sprites.block, block.x, block.y) // рендер блоков
+            if (block.active) {
+                this.ctx.drawImage(this.sprites.block, block.x, block.y) // рендер блоков
+            }
         }
     },
     random(min, max) {
@@ -144,11 +153,42 @@ game.ball = {
     },
     bumpBlock(block) {
         this.dy = -this.dy
+        block.active = false
     },
     bumpPlatform(platform){
-        this.dy *= -1
-        let touchX = this.x + this.width / 2 //делится на 2 чтобы было понятно в какую часть ударил мяч
-        this.dx = this.velocity * platform.getTouchOffset(touchX)
+        if (this.dy > 0) {
+            this.dy = -this.velocity //мяч отталкивается только наверх и никогда назад
+            let touchX = this.x + this.width / 2 //делится на 2 чтобы было понятно в какую часть ударил мяч
+            this.dx = this.velocity * platform.getTouchOffset(touchX)
+        }
+    },
+    collideWorldBounce() {
+        let x = this.x + this.dx;
+        let y = this.y + this.dy;
+
+        let ballLeft = x
+        let ballRight = ballLeft + this.width
+        let balltop = y
+        let ballBottom = balltop + this.height
+
+        let worldLeft = 0
+        let worldRight = game.width
+        let worldTop = 0
+        let worldBottom = game.height
+
+        if (ballLeft < worldLeft) {
+            this.x = 0
+            this.dx = this.velocity
+        } else if (ballRight > worldRight) {
+            this.x = worldRight - this.width
+            this.dx = -this.velocity
+        } else if (balltop < worldTop) {
+            this.dy = this.velocity
+            this.y = 0
+        } else if (ballBottom > worldBottom) {
+            console.log('game over')
+        }
+
     }
 };
 
