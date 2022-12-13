@@ -1,3 +1,9 @@
+const KEYS = {
+    LEFT: 37,
+    RIGHT: 39,
+    SPACE: 32
+}
+
 let game = {
     ctx: null,
     platform: null,
@@ -16,15 +22,16 @@ let game = {
         this.setEvents();
     },
     setEvents() {
-        window.addEventListener("keydown", (e) => {
-            if (e.code === "ArrowLeft" ||  e.code === "ArrowRight") {
-                this.platform.start(e.code)
+        window.addEventListener("keydown", e => {
+            if (e.keyCode === KEYS.SPACE) {
+                this.platform.fire();
+            } else if (e.keyCode === KEYS.LEFT || e.keyCode === KEYS.RIGHT) {
+                this.platform.start(e.keyCode);
             }
-        })
-
-        window.addEventListener("keyup", () => {
-            this.platform.stop()// обнуление скорости чтобы платформа останавливалась
-        })
+        });
+        window.addEventListener("keyup", e => {
+            this.platform.stop();
+        });
     },
     preload (callback) {
         let loaded = 0
@@ -38,9 +45,8 @@ let game = {
         for (const spritesKey in this.sprites) {
             this.sprites[spritesKey] = new Image()
             this.sprites[spritesKey].src = `img/${spritesKey}.png`
-            this.sprites[spritesKey].addEventListener("load", onImageLoad()); //загрузка динамического пути
+            this.sprites[spritesKey].addEventListener("load", onImageLoad); //загрузка динамического пути
         }
-
     },
     create() {
         for (let row = 0; row < this.rows; row++) {
@@ -56,6 +62,7 @@ let game = {
 
     update() {
         this.platform.move()
+        this.ball.move()
     },
     run(){
         window.requestAnimationFrame(() => {
@@ -78,7 +85,7 @@ let game = {
             this.ctx.drawImage(this.sprites.block, block.x, block.y); // рендер блоков
         }
     },
-    start: function() {
+    start() {
         this.init()
         this.preload(()=> {
             this.create();
@@ -89,35 +96,54 @@ let game = {
 
 //свойства спрайтов
 
-game.ball = {
-    x: 320,
-    y: 280,
-    width: 20,
-    height: 20
-}
-
 game.platform = {
+    velocity: 6,//скорость платформы
+    dx: 0, //скорость по дефолту
+    x: 280,
+    y: 300,
+    ball: this.ball,
+    fire() {
+        if (this.ball) {
+            this.ball.start()
+            this.ball = null
+        }
+    },
     move() {
         if(this.dx) { //если координата не равна нулю то платформа движется
             this.x += this.dx
-            game.ball.x +=this.dx
+            if (this.ball) {
+                this.ball.x += this.dx
+            }
         }
     },
-    start(keyVal) {
-        if (keyVal === "ArrowLeft") {
+    start(direction) {
+        if (direction === KEYS.LEFT) {
             this.dx = -this.velocity
-        } else if ( keyVal === "ArrowRight") {
+        } else if (direction === KEYS.RIGHT) {
             this.dx = this.velocity
         }
     },
     stop() {
         this.dx = 0
     },
-    velocity: 6,//скорость платформы
-    dx: 0, //скорость по дефолту
-    x: 280,
-    y: 300
 }
+
+game.ball = {
+    dy: 0,
+    velocity: 3,
+    x: 320,
+    y: 280,
+    width: 20,
+    height: 20,
+    start() {
+        this.dy = -this.velocity;
+    },
+    move() {
+        if (this.dy) {
+            this.y += this.dy;
+        }
+    }
+};
 
 window.addEventListener('load', () => {
     game.start()
